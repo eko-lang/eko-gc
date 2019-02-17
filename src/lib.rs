@@ -2,6 +2,10 @@ use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
 
+pub use self::trace::Trace;
+
+mod trace;
+
 pub struct Arena<'gc> {
     marker: PhantomData<&'gc ()>,
 }
@@ -13,10 +17,6 @@ impl<'gc> Arena<'gc> {
         }
     }
 }
-
-pub unsafe trait Trace {}
-
-unsafe impl Trace for i64 {}
 
 pub struct Gc<'gc, T: Trace + ?Sized + 'gc> {
     data: Rc<T>,
@@ -48,7 +48,7 @@ pub struct RefCell<'gc, T: Trace + ?Sized + 'gc> {
 }
 
 impl<'gc, T: Trace + 'gc> RefCell<'gc, T> {
-    pub fn new(arena: &Arena<'gc>, data: T) -> RefCell<'gc, T> {
+    pub fn new(_arena: &Arena<'gc>, data: T) -> RefCell<'gc, T> {
         RefCell {
             data: std::cell::RefCell::new(data),
             marker: PhantomData,
