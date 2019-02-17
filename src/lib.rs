@@ -16,7 +16,9 @@ impl<'gc> Arena<'gc> {
 
 pub unsafe trait Trace {}
 
-pub struct Gc<'gc, T: Trace + 'gc> {
+unsafe impl Trace for i64 {}
+
+pub struct Gc<'gc, T: Trace + ?Sized + 'gc> {
     data: Rc<T>,
     marker: PhantomData<&'gc ()>,
 }
@@ -30,6 +32,14 @@ impl<'gc, T: Trace + 'gc> Gc<'gc, T> {
     }
 }
 
+impl<'gc, T: Trace + ?Sized + 'gc> Deref for Gc<'gc, T> {
+    type Target = T;
+
+    fn deref(&self) -> &T {
+        self.data.deref()
+    }
+}
+
 unsafe impl<'gc, T: Trace + 'gc> Trace for Gc<'gc, T> {}
 
 pub struct RefCell<'gc, T: Trace + ?Sized + 'gc> {
@@ -38,7 +48,7 @@ pub struct RefCell<'gc, T: Trace + ?Sized + 'gc> {
 }
 
 impl<'gc, T: Trace + 'gc> RefCell<'gc, T> {
-    fn new(arena: &Arena<'gc>, data: T) -> RefCell<'gc, T> {
+    pub fn new(arena: &Arena<'gc>, data: T) -> RefCell<'gc, T> {
         RefCell {
             data: std::cell::RefCell::new(data),
             marker: PhantomData,
@@ -47,14 +57,14 @@ impl<'gc, T: Trace + 'gc> RefCell<'gc, T> {
 }
 
 impl<'gc, T: Trace + ?Sized + 'gc> RefCell<'gc, T> {
-    fn borrow<'a>(&'a self) -> Ref<'a, 'gc, T> {
+    pub fn borrow<'a>(&'a self) -> Ref<'a, 'gc, T> {
         Ref {
             data: self.data.borrow(),
             marker: PhantomData,
         }
     }
 
-    fn borrow_mut<'a>(&'a self) -> RefMut<'a, 'gc, T> {
+    pub fn borrow_mut<'a>(&'a self) -> RefMut<'a, 'gc, T> {
         RefMut {
             data: self.data.borrow_mut(),
             marker: PhantomData,
@@ -93,5 +103,35 @@ impl<'a, 'gc, T: Trace + ?Sized + 'gc> Deref for RefMut<'a, 'gc, T> {
 impl<'a, 'gc, T: Trace + ?Sized + 'gc> DerefMut for RefMut<'a, 'gc, T> {
     fn deref_mut(&mut self) -> &mut T {
         self.data.deref_mut()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Arena, Gc, RefCell};
+
+    #[test]
+    fn gc() {
+        let arena = Arena::new();
+        let gc = Gc::new(&arena, 0);
+        assert_eq!(*gc, 0);
+    }
+
+    #[test]
+    fn ref_cell() {
+        let arena = Arena::new();
+        let ref_cell = RefCell::new(&arena, 0);
+        assert_eq!(*ref_cell.borrow(), 0);
+        *ref_cell.borrow_mut() = 1;
+        assert_eq!(*ref_cell.borrow(), 1);
+    }
+
+    #[test]
+    fn gc_ref_cell() {
+        let arena = Arena::new();
+        let gc = Gc::new(&arena, RefCell::new(&arena, 0));
+        assert_eq!(*gc.borrow(), 0);
+        *gc.borrow_mut() = 1;
+        assert_eq!(*gc.borrow(), 1);
     }
 }
