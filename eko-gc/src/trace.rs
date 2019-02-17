@@ -2,6 +2,7 @@ use std::collections::{BTreeMap, HashMap};
 
 pub unsafe trait Trace {}
 
+#[macro_export]
 macro_rules! unsafe_empty_trace {
     ($type:ident) => {
         unsafe impl Trace for $type {}
