@@ -8,27 +8,27 @@ pub use self::trace::Trace;
 mod trace;
 
 pub struct Arena<'gc> {
-    marker: PhantomData<&'gc ()>,
+    phantom: PhantomData<&'gc ()>,
 }
 
 impl<'gc> Arena<'gc> {
     pub fn new() -> Arena<'gc> {
         Arena {
-            marker: PhantomData,
+            phantom: PhantomData,
         }
     }
 }
 
 pub struct Gc<'gc, T: Trace + ?Sized + 'gc> {
     data: Rc<T>,
-    marker: PhantomData<&'gc ()>,
+    phantom: PhantomData<&'gc ()>,
 }
 
 impl<'gc, T: Trace + 'gc> Gc<'gc, T> {
     pub fn new(_arena: &Arena<'gc>, data: T) -> Gc<'gc, T> {
         Gc {
             data: Rc::new(data),
-            marker: PhantomData,
+            phantom: PhantomData,
         }
     }
 }
@@ -37,7 +37,7 @@ impl<'gc, T: Trace + ?Sized + 'gc> Clone for Gc<'gc, T> {
     fn clone(&self) -> Gc<'gc, T> {
         Gc {
             data: self.data.clone(),
-            marker: PhantomData,
+            phantom: PhantomData,
         }
     }
 }
@@ -59,7 +59,7 @@ impl<'gc, T: Trace + ?Sized + 'gc> Deref for Gc<'gc, T> {
 unsafe impl<'gc, T: Trace + 'gc> Trace for Gc<'gc, T> {}
 
 pub struct RefCell<'gc, T: Trace + ?Sized + 'gc> {
-    marker: PhantomData<&'gc ()>,
+    phantom: PhantomData<&'gc ()>,
     data: std::cell::RefCell<T>,
 }
 
@@ -67,7 +67,7 @@ impl<'gc, T: Trace + 'gc> RefCell<'gc, T> {
     pub fn new(_arena: &Arena<'gc>, data: T) -> RefCell<'gc, T> {
         RefCell {
             data: std::cell::RefCell::new(data),
-            marker: PhantomData,
+            phantom: PhantomData,
         }
     }
 }
@@ -99,14 +99,14 @@ impl<'gc, T: Trace + ?Sized + 'gc> RefCell<'gc, T> {
     pub fn borrow<'a>(&'a self) -> Ref<'a, 'gc, T> {
         Ref {
             data: self.data.borrow(),
-            marker: PhantomData,
+            phantom: PhantomData,
         }
     }
 
     pub fn borrow_mut<'a>(&'a self) -> RefMut<'a, 'gc, T> {
         RefMut {
             data: self.data.borrow_mut(),
-            marker: PhantomData,
+            phantom: PhantomData,
         }
     }
 }
@@ -115,7 +115,7 @@ unsafe impl<'gc, T: Trace + ?Sized + 'gc> Trace for RefCell<'gc, T> {}
 
 pub struct Ref<'a, 'gc, T: Trace + ?Sized + 'gc> {
     data: std::cell::Ref<'a, T>,
-    marker: PhantomData<&'gc ()>,
+    phantom: PhantomData<&'gc ()>,
 }
 
 impl<'a, 'gc, T: Trace + ?Sized + 'gc> Deref for Ref<'a, 'gc, T> {
@@ -128,7 +128,7 @@ impl<'a, 'gc, T: Trace + ?Sized + 'gc> Deref for Ref<'a, 'gc, T> {
 
 pub struct RefMut<'a, 'gc, T: Trace + ?Sized + 'gc> {
     data: std::cell::RefMut<'a, T>,
-    marker: PhantomData<&'gc ()>,
+    phantom: PhantomData<&'gc ()>,
 }
 
 impl<'a, 'gc, T: Trace + ?Sized + 'gc> Deref for RefMut<'a, 'gc, T> {
