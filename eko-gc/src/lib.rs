@@ -1,3 +1,4 @@
+use std::fmt;
 use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
@@ -18,6 +19,7 @@ impl<'gc> Arena<'gc> {
     }
 }
 
+#[derive(Clone)]
 pub struct Gc<'gc, T: Trace + ?Sized + 'gc> {
     data: Rc<T>,
     marker: PhantomData<&'gc ()>,
@@ -29,6 +31,12 @@ impl<'gc, T: Trace + 'gc> Gc<'gc, T> {
             data: Rc::new(data),
             marker: PhantomData,
         }
+    }
+}
+
+impl<'gc, T: fmt::Debug + Trace + ?Sized + 'gc> fmt::Debug for Gc<'gc, T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt::Debug::fmt(&**self, f)
     }
 }
 
