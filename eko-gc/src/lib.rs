@@ -64,6 +64,29 @@ impl<'gc, T: Trace + 'gc> RefCell<'gc, T> {
     }
 }
 
+impl<'gc, T: fmt::Debug + Trace + ?Sized + 'gc> fmt::Debug for RefCell<'gc, T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self.data.try_borrow() {
+            Ok(borrow) => f.debug_struct("RefCell").field("value", &borrow).finish(),
+            Err(_) => {
+                // The RefCell is mutably borrowed so we can't look at its value
+                // here. Show a placeholder instead.
+                struct BorrowedPlaceholder;
+
+                impl fmt::Debug for BorrowedPlaceholder {
+                    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                        f.write_str("<borrowed>")
+                    }
+                }
+
+                f.debug_struct("RefCell")
+                    .field("value", &BorrowedPlaceholder)
+                    .finish()
+            }
+        }
+    }
+}
+
 impl<'gc, T: Trace + ?Sized + 'gc> RefCell<'gc, T> {
     pub fn borrow<'a>(&'a self) -> Ref<'a, 'gc, T> {
         Ref {
