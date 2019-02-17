@@ -19,7 +19,6 @@ impl<'gc> Arena<'gc> {
     }
 }
 
-#[derive(Clone)]
 pub struct Gc<'gc, T: Trace + ?Sized + 'gc> {
     data: Rc<T>,
     marker: PhantomData<&'gc ()>,
@@ -29,6 +28,15 @@ impl<'gc, T: Trace + 'gc> Gc<'gc, T> {
     pub fn new(_arena: &Arena<'gc>, data: T) -> Gc<'gc, T> {
         Gc {
             data: Rc::new(data),
+            marker: PhantomData,
+        }
+    }
+}
+
+impl<'gc, T: Trace + ?Sized + 'gc> Clone for Gc<'gc, T> {
+    fn clone(&self) -> Gc<'gc, T> {
+        Gc {
+            data: self.data.clone(),
             marker: PhantomData,
         }
     }
@@ -149,6 +157,14 @@ mod tests {
     }
 
     #[test]
+    fn gc_clone() {
+        let arena = Arena::new();
+        let gc = Gc::new(&arena, 0);
+        let gc_clone = Gc::clone(&gc);
+        assert_eq!(*gc_clone, 0);
+    }
+
+    #[test]
     fn ref_cell() {
         let arena = Arena::new();
         let ref_cell = RefCell::new(&arena, 0);
@@ -163,6 +179,16 @@ mod tests {
         let gc = Gc::new(&arena, RefCell::new(&arena, 0));
         assert_eq!(*gc.borrow(), 0);
         *gc.borrow_mut() = 1;
+        assert_eq!(*gc.borrow(), 1);
+    }
+
+    #[test]
+    fn gc_ref_cell_clone() {
+        let arena = Arena::new();
+        let gc = Gc::new(&arena, RefCell::new(&arena, 0));
+        assert_eq!(*gc.borrow(), 0);
+        let gc_clone = Gc::clone(&gc);
+        *gc_clone.borrow_mut() = 1;
         assert_eq!(*gc.borrow(), 1);
     }
 }
