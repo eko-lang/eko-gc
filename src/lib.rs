@@ -24,7 +24,7 @@ pub struct Gc<'gc, T: Trace + ?Sized + 'gc> {
 }
 
 impl<'gc, T: Trace + 'gc> Gc<'gc, T> {
-    fn new(_arena: &Arena<'gc>, data: T) -> Gc<'gc, T> {
+    pub fn new(_arena: &Arena<'gc>, data: T) -> Gc<'gc, T> {
         Gc {
             data: Rc::new(data),
             marker: PhantomData,
