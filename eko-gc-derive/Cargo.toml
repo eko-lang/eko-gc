@@ -1,0 +1,17 @@
+[package]
+name = "eko-gc-derive"
+version = "0.0.3"
+edition = "2018"
+
+authors = ["Ravern Koh <ravernkoh@gmail.com>"]
+description = "Scoped garbage collection"
+readme = "../README.md"
+license = "AGPL-3.0"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "0.4"
+quote = "0.6"
+synstructure = "0.10"
