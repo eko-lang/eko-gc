@@ -1,11 +1,11 @@
 [package]
-name = "trekk"
-version = "0.0.1"
+name = "eko-gc"
+version = "0.0.3"
 edition = "2018"
 
 authors = ["Ravern Koh <ravernkoh@gmail.com>"]
 description = "Scoped garbage collection"
 readme = "README.md"
-license = "MIT"
+license = "AGPL-3.0"
 
 [dependencies]
