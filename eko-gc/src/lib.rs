@@ -19,7 +19,7 @@ impl<'gc> Arena<'gc> {
     }
 }
 
-pub struct Gc<'gc, T: Trace + ?Sized + 'gc> {
+pub struct Gc<'gc, T: ?Sized + Trace + 'gc> {
     data: Rc<T>,
     phantom: PhantomData<&'gc ()>,
 }
@@ -33,7 +33,7 @@ impl<'gc, T: Trace + 'gc> Gc<'gc, T> {
     }
 }
 
-impl<'gc, T: Trace + ?Sized + 'gc> Clone for Gc<'gc, T> {
+impl<'gc, T: ?Sized + Trace + 'gc> Clone for Gc<'gc, T> {
     fn clone(&self) -> Gc<'gc, T> {
         Gc {
             data: self.data.clone(),
@@ -42,13 +42,13 @@ impl<'gc, T: Trace + ?Sized + 'gc> Clone for Gc<'gc, T> {
     }
 }
 
-impl<'gc, T: fmt::Debug + Trace + ?Sized + 'gc> fmt::Debug for Gc<'gc, T> {
+impl<'gc, T: ?Sized + fmt::Debug + Trace + 'gc> fmt::Debug for Gc<'gc, T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::Debug::fmt(&**self, f)
     }
 }
 
-impl<'gc, T: Trace + ?Sized + 'gc> Deref for Gc<'gc, T> {
+impl<'gc, T: ?Sized + Trace + 'gc> Deref for Gc<'gc, T> {
     type Target = T;
 
     fn deref(&self) -> &T {
@@ -58,7 +58,7 @@ impl<'gc, T: Trace + ?Sized + 'gc> Deref for Gc<'gc, T> {
 
 unsafe impl<'gc, T: Trace + 'gc> Trace for Gc<'gc, T> {}
 
-pub struct RefCell<'gc, T: Trace + ?Sized + 'gc> {
+pub struct RefCell<'gc, T: ?Sized + Trace + 'gc> {
     phantom: PhantomData<&'gc ()>,
     data: std::cell::RefCell<T>,
 }
@@ -72,7 +72,7 @@ impl<'gc, T: Trace + 'gc> RefCell<'gc, T> {
     }
 }
 
-impl<'gc, T: fmt::Debug + Trace + ?Sized + 'gc> fmt::Debug for RefCell<'gc, T> {
+impl<'gc, T: ?Sized + fmt::Debug + Trace + 'gc> fmt::Debug for RefCell<'gc, T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.data.try_borrow() {
             Ok(borrow) => f.debug_struct("RefCell").field("value", &borrow).finish(),
@@ -95,7 +95,7 @@ impl<'gc, T: fmt::Debug + Trace + ?Sized + 'gc> fmt::Debug for RefCell<'gc, T> {
     }
 }
 
-impl<'gc, T: Trace + ?Sized + 'gc> RefCell<'gc, T> {
+impl<'gc, T: ?Sized + Trace + 'gc> RefCell<'gc, T> {
     pub fn borrow<'a>(&'a self) -> Ref<'a, 'gc, T> {
         Ref {
             data: self.data.borrow(),
@@ -111,14 +111,14 @@ impl<'gc, T: Trace + ?Sized + 'gc> RefCell<'gc, T> {
     }
 }
 
-unsafe impl<'gc, T: Trace + ?Sized + 'gc> Trace for RefCell<'gc, T> {}
+unsafe impl<'gc, T: ?Sized + Trace + 'gc> Trace for RefCell<'gc, T> {}
 
-pub struct Ref<'a, 'gc, T: Trace + ?Sized + 'gc> {
+pub struct Ref<'a, 'gc, T: ?Sized + Trace + 'gc> {
     data: std::cell::Ref<'a, T>,
     phantom: PhantomData<&'gc ()>,
 }
 
-impl<'a, 'gc, T: Trace + ?Sized + 'gc> Deref for Ref<'a, 'gc, T> {
+impl<'a, 'gc, T: ?Sized + Trace + 'gc> Deref for Ref<'a, 'gc, T> {
     type Target = T;
 
     fn deref(&self) -> &T {
@@ -126,12 +126,12 @@ impl<'a, 'gc, T: Trace + ?Sized + 'gc> Deref for Ref<'a, 'gc, T> {
     }
 }
 
-pub struct RefMut<'a, 'gc, T: Trace + ?Sized + 'gc> {
+pub struct RefMut<'a, 'gc, T: ?Sized + Trace + 'gc> {
     data: std::cell::RefMut<'a, T>,
     phantom: PhantomData<&'gc ()>,
 }
 
-impl<'a, 'gc, T: Trace + ?Sized + 'gc> Deref for RefMut<'a, 'gc, T> {
+impl<'a, 'gc, T: ?Sized + Trace + 'gc> Deref for RefMut<'a, 'gc, T> {
     type Target = T;
 
     fn deref(&self) -> &T {
@@ -139,7 +139,7 @@ impl<'a, 'gc, T: Trace + ?Sized + 'gc> Deref for RefMut<'a, 'gc, T> {
     }
 }
 
-impl<'a, 'gc, T: Trace + ?Sized + 'gc> DerefMut for RefMut<'a, 'gc, T> {
+impl<'a, 'gc, T: ?Sized + Trace + 'gc> DerefMut for RefMut<'a, 'gc, T> {
     fn deref_mut(&mut self) -> &mut T {
         self.data.deref_mut()
     }
