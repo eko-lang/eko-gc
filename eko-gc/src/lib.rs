@@ -31,6 +31,10 @@ impl<'gc, T: Trace + 'gc> Gc<'gc, T> {
             phantom: PhantomData,
         }
     }
+
+    pub fn ptr_eq(&self, other: &Gc<'gc, T>) -> bool {
+        Rc::ptr_eq(&self.data, &other.data)
+    }
 }
 
 impl<'gc, T: ?Sized + Trace + 'gc> Clone for Gc<'gc, T> {
