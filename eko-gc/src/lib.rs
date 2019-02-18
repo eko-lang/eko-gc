@@ -1,4 +1,6 @@
+use std::cmp::Ordering;
 use std::fmt;
+use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
@@ -43,6 +45,32 @@ impl<'gc, T: ?Sized + Trace + 'gc> Clone for Gc<'gc, T> {
             data: self.data.clone(),
             phantom: PhantomData,
         }
+    }
+}
+
+impl<'gc, T: ?Sized + Trace + PartialEq + 'gc> PartialEq for Gc<'gc, T> {
+    fn eq(&self, other: &Gc<'gc, T>) -> bool {
+        self.data == other.data
+    }
+}
+
+impl<'gc, T: ?Sized + Eq + Trace + 'gc> Eq for Gc<'gc, T> {}
+
+impl<'gc, T: ?Sized + Trace + PartialOrd + 'gc> PartialOrd for Gc<'gc, T> {
+    fn partial_cmp(&self, other: &Gc<'gc, T>) -> Option<Ordering> {
+        self.data.partial_cmp(&other.data)
+    }
+}
+
+impl<'gc, T: ?Sized + Trace + Ord + 'gc> Ord for Gc<'gc, T> {
+    fn cmp(&self, other: &Gc<'gc, T>) -> Ordering {
+        self.data.cmp(&other.data)
+    }
+}
+
+impl<'gc, T: ?Sized + Hash + Trace + 'gc> Hash for Gc<'gc, T> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.data.hash(state);
     }
 }
 
