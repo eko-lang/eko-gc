@@ -34,8 +34,8 @@ impl<'gc, T: Trace + 'gc> Gc<'gc, T> {
         }
     }
 
-    pub fn ptr_eq(&self, other: &Gc<'gc, T>) -> bool {
-        Rc::ptr_eq(&self.data, &other.data)
+    pub fn ptr_eq(this: &Gc<'gc, T>, other: &Gc<'gc, T>) -> bool {
+        Rc::ptr_eq(&this.data, &other.data)
     }
 }
 
