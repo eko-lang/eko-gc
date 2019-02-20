@@ -150,6 +150,18 @@ pub struct Ref<'a, 'gc, T: ?Sized + Trace + 'gc> {
     phantom: PhantomData<&'gc ()>,
 }
 
+impl<'a, 'gc, T: ?Sized + Trace + 'gc> Ref<'a, 'gc, T> {
+    pub fn map<U: ?Sized + Trace + 'gc, F>(this: Ref<'a, 'gc, T>, f: F) -> Ref<'a, 'gc, U>
+    where
+        F: FnOnce(&T) -> &U,
+    {
+        Ref {
+            data: std::cell::Ref::map(this.data, f),
+            phantom: PhantomData,
+        }
+    }
+}
+
 impl<'a, 'gc, T: ?Sized + Trace + 'gc> Deref for Ref<'a, 'gc, T> {
     type Target = T;
 
@@ -161,6 +173,18 @@ impl<'a, 'gc, T: ?Sized + Trace + 'gc> Deref for Ref<'a, 'gc, T> {
 pub struct RefMut<'a, 'gc, T: ?Sized + Trace + 'gc> {
     data: std::cell::RefMut<'a, T>,
     phantom: PhantomData<&'gc ()>,
+}
+
+impl<'a, 'gc, T: ?Sized + Trace + 'gc> RefMut<'a, 'gc, T> {
+    pub fn map<U: ?Sized + Trace + 'gc, F>(this: RefMut<'a, 'gc, T>, f: F) -> RefMut<'a, 'gc, U>
+    where
+        F: FnOnce(&mut T) -> &mut U,
+    {
+        RefMut {
+            data: std::cell::RefMut::map(this.data, f),
+            phantom: PhantomData,
+        }
+    }
 }
 
 impl<'a, 'gc, T: ?Sized + Trace + 'gc> Deref for RefMut<'a, 'gc, T> {
