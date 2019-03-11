@@ -1,4 +1,5 @@
 use std::collections::{BTreeMap, HashMap};
+use std::rc::Rc;
 
 pub unsafe trait Trace {}
 
@@ -30,3 +31,5 @@ unsafe impl<K: Trace, V: Trace> Trace for HashMap<K, V> {}
 unsafe impl<T: Trace> Trace for Vec<T> {}
 
 unsafe impl<T: Trace> Trace for Option<T> {}
+
+unsafe impl<T: ?Sized + Trace> Trace for Rc<T> {}
